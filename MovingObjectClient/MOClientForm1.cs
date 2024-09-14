@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace MovingObject
+namespace MovingObjectClient
 {
-    public partial class Form1 : Form
+    public partial class MOClientForm1 : Form
     {
 
         Pen red = new Pen(Color.Red);
@@ -18,7 +18,7 @@ namespace MovingObject
         SolidBrush fillBlue = new SolidBrush(Color.Blue);
         int slide = 10; 
 
-        public Form1()
+        public MOClientForm1()
         {
             InitializeComponent();
             timer1.Interval = 50;
@@ -27,10 +27,9 @@ namespace MovingObject
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            back();
-
-            rect.X += slide;
-            Invalidate();
+            // back();
+            // rect.X += slide;
+            // Invalidate();
         }
 
         private void back()
@@ -45,9 +44,14 @@ namespace MovingObject
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             Graphics g = e.Graphics;
-
             g.DrawRectangle(red, rect);
             g.FillRectangle(fillBlue, rect);
+        }
+        
+        public void UpdateRectangle(Rectangle newRect)
+        {
+            this.rect = newRect;
+            Invalidate();
         }
     }
 }

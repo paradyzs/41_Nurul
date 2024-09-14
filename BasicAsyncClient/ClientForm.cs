@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows.Forms;
+using MovingObjectClient;
 
 namespace BasicAsyncClient
 {
@@ -11,10 +14,14 @@ namespace BasicAsyncClient
     {
         private Socket clientSocket;
         private byte[] buffer;
+        private byte[] buffer2;
+        private MOClientForm1 _moClientForm1;
 
         public ClientForm()
         {
             InitializeComponent();
+            _moClientForm1 = new MOClientForm1();
+            _moClientForm1.Show();
         }
 
         private static void ShowErrorDialog(string message)
@@ -34,13 +41,13 @@ namespace BasicAsyncClient
                 }
 
 
-                string message = Encoding.ASCII.GetString(buffer);
-
-                Invoke((Action) delegate
+                string message = Encoding.ASCII.GetString(buffer, 0 , received);
+                if (TryParseRectangle(message, out Rectangle rect))
                 {
-                    Text = "Server says: " + message;
-                });
-
+                    _moClientForm1?.UpdateRectangle(rect);
+                }
+                Invoke((Action)delegate { Text = "Server says: " + message; });
+                Console.WriteLine("Server says: " + message);
                 // Start receiving data again.
                 clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, ReceiveCallback, null);
             }
@@ -108,7 +115,8 @@ namespace BasicAsyncClient
             try
             {
                 // Serialize the textBoxes text before sending.
-                PersonPackage person = new PersonPackage(checkBoxMale.Checked, (ushort)numberBoxAge.Value, textBoxEmployee.Text);
+                PersonPackage person = new PersonPackage(checkBoxMale.Checked, (ushort)numberBoxAge.Value,
+                    textBoxEmployee.Text);
                 byte[] buffer = person.ToByteArray();
                 clientSocket.BeginSend(buffer, 0, buffer.Length, SocketFlags.None, SendCallback, null);
             }
@@ -141,6 +149,53 @@ namespace BasicAsyncClient
             {
                 ShowErrorDialog(ex.Message);
             }
+        }
+
+
+// Method to parse the Rectangle.ToString() format
+        private bool TryParseRectangle(string input, out Rectangle rectangle)
+        {
+            rectangle = new Rectangle();
+
+            try
+            {
+                // Remove the surrounding braces and split by commas
+                // Expected format: {X=20,Y=20,Width=30,Height=30}
+                string[] parts = input.Trim('{', '}').Split(',');
+
+                // Create a dictionary to store the parsed values
+                Dictionary<string, int> values = new Dictionary<string, int>();
+
+                foreach (string part in parts)
+                {
+                    // Split each part by '='
+                    string[] pair = part.Split('=');
+                    if (pair.Length == 2 && int.TryParse(pair[1], out int value))
+                    {
+                        values[pair[0].Trim()] = value;
+                    }
+                }
+
+                // Check if all required parts are present
+                if (values.ContainsKey("X") && values.ContainsKey("Y") &&
+                    values.ContainsKey("Width") && values.ContainsKey("Height"))
+                {
+                    // Construct the rectangle using parsed values
+                    rectangle = new Rectangle(
+                        values["X"],
+                        values["Y"],
+                        values["Width"],
+                        values["Height"]
+                    );
+                    return true;
+                }
+            }
+            catch
+            {
+                // Parsing failed
+            }
+
+            return false;
         }
     }
 }

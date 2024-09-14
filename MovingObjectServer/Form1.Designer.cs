@@ -1,5 +1,7 @@
 ﻿
-namespace MovingObject
+using System;
+
+namespace MovingObjectServer
 {
     partial class Form1
     {
@@ -40,14 +42,14 @@ namespace MovingObject
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(559, 344);
+            this.ClientSize = new System.Drawing.Size(838, 529);
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "Form1";
             this.Text = "Form1";
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form1_Paint);
             this.ResumeLayout(false);
-
         }
 
         #endregion

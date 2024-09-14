@@ -1,9 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using MovingObjectServer;
+
+//add MovingObjects
 
 namespace BasicAsyncServer
 {
@@ -12,11 +17,14 @@ namespace BasicAsyncServer
         private Socket serverSocket;
         private List<Socket> clientSockets = new List<Socket>();        
         private byte[] buffer;
+        private Form1 form = new Form1();
+        private Rectangle formRect;
 
         public ServerForm()
         {
             InitializeComponent();
             StartServer();
+            TestAsyc();
         }
 
         private static void ShowErrorDialog(string message)
@@ -34,6 +42,8 @@ namespace BasicAsyncServer
         {
             try
             {
+                form.Show();
+                Console.WriteLine("Server started.");
                 serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                 serverSocket.Bind(new IPEndPoint(IPAddress.Any, 3333));
                 serverSocket.Listen(10);
@@ -53,6 +63,7 @@ namespace BasicAsyncServer
         {
             try
             {
+                Console.WriteLine("Client connected.");
                 Socket handler = serverSocket.EndAccept(AR);
                 clientSockets.Add(handler);
 
@@ -137,6 +148,22 @@ namespace BasicAsyncServer
             {
                 dataGridView.Rows.Add(person.Name, person.Age, person.IsMale);
             });
+        }
+
+        private async void TestAsyc()
+        {
+            
+            while (true)
+            {
+                formRect = form.GetRect();
+                foreach (Socket client in clientSockets)
+                {
+                    // Send the rectangle data to the client.
+                    var sendData = Encoding.ASCII.GetBytes(formRect.ToString());
+                    client.BeginSend(sendData, 0, sendData.Length, SocketFlags.None, SendCallback, client);
+                }
+                await Task.Delay(100);
+            }
         }
     }
 }
